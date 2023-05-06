@@ -1,141 +1,212 @@
--- Buat fungsi inputPelanggan()
-
-CREATE FUNCTION inputPelanggan(
-
-  IN p_kode VARCHAR(10),
-
-  IN p_nama VARCHAR(45),
-
-  IN p_jk CHAR(1),
-
-  IN p_tmp_lahir VARCHAR(30),
-
-  IN p_tgl_lahir DATE,
-
-  IN p_email VARCHAR(45),
-
-  IN p_kartu_id INT
-
-) RETURNS INT
-
+-- membuat fungsi inputPelanggan()
+DELIMITER $$
+CREATE FUNCTION inputPelanggan(kode VARCHAR(11), nama_pelanggan VARCHAR(255), jk VARCHAR(1), tmp_lahir VARCHAR(255), tgl_lahir DATE, email VARCHAR(255), kartu_id INT(11))
+RETURNS INT(11)
+DETERMINISTIC
 BEGIN
+  DECLARE id_pelanggan INT(11);
+  
+  -- memasukkan data pelanggan baru ke dalam tabel pelanggan
+  INSERT INTO pelanggan (kode, nama_pelanggan, jk, tmp_lahir, tgl_lahir, email, kartu_id) VALUES (kode, nama_pelanggan, jk, tmp_lahir, tgl_lahir, email, kartu_id);
+  
+  -- menyimpan id pelanggan yang baru saja dibuat
+  SET id_pelanggan = LAST_INSERT_ID();
+  
+  RETURN id_pelanggan;
+END $$
+DELIMITER ;
 
-  INSERT INTO pelanggan (kode, nama, jk, tmp_lahir, tgl_lahir, email, kartu_id)
+SELECT inputPelanggan('C011', 'Alex', 'L', 'Jakarta', '1996-05-12', 'alex@gmail.com', 2);
 
-  VALUES (p_kode, p_nama, p_jk, p_tmp_lahir, p_tgl_lahir, p_email, p_kartu_id);
 
-  RETURN LAST_INSERT_ID();
+-- procedure
+DELIMITER $$
+CREATE PROCEDURE inputPelanggan(IN kode VARCHAR(11), IN nama_pelanggan VARCHAR(255), IN jk VARCHAR(1), IN tmp_lahir VARCHAR(255), IN tgl_lahir DATE, IN email VARCHAR(255), IN kartu_id INT(11), OUT id_pelanggan INT(11))
+BEGIN
+  -- memasukkan data pelanggan baru ke dalam tabel pelanggan
+  INSERT INTO pelanggan (kode, nama_pelanggan, jk, tmp_lahir, tgl_lahir, email, kartu_id) VALUES (kode, nama_pelanggan, jk, tmp_lahir, tgl_lahir, email, kartu_id);
+  
+  -- menyimpan id pelanggan yang baru saja dibuat
+  SET id_pelanggan = LAST_INSERT_ID();
+END$$
+DELIMITER ;
 
-END;
+SELECT inputPelanggan('C012', 'Amara', 'P', 'Jakarta', '1996-05-12', 'amara@gmail.com', 2);
 
--- Panggil fungsi inputPelanggan()
 
-SELECT inputPelanggan('P002', 'mirlani', 'L', 'Kendari', '2023-01-01', 'mirlani@gmail.com', 1);
 
--- Buat fungsi showPelanggan()
-
+-- Buat fungsi showPelanggan(), setelah itu panggil fungsinya
+DELIMITER $$
 CREATE FUNCTION showPelanggan()
+RETURNS TEXT
+DETERMINISTIC
+BEGIN
+    DECLARE result TEXT;
+    SET result = '';
+    SELECT GROUP_CONCAT(CONCAT('ID: ', pelanggan.id, ', Kode: ', pelanggan.kode, ', Nama Pelanggan: ', pelanggan.nama_pelanggan) SEPARATOR '; ') INTO result FROM pelanggan;
+    RETURN result;
+END $$
+DELIMITER ;
 
-RETURNS TABLE
+SELECT showPelanggan();
 
-AS
+-- Procedure
+DELIMITER $$
+CREATE PROCEDURE showPelanggan()
+BEGIN
+    SELECT * FROM pelanggan;
+END $$
+DELIMITER ;
 
-RETURN SELECT * FROM pelanggan;
+CALL showPelanggan();
 
--- Panggil fungsi showPelanggan()
 
-SELECT * FROM showPelanggan();
 
--- Buat fungsi inputProduk()
-
+-- Buat fungsi inputProduk(), setelah itu panggil fungsinya
+DELIMITER $$
 CREATE FUNCTION inputProduk(
-
-  IN p_kode VARCHAR(10),
-
-  IN p_nama VARCHAR(45),
-
-  IN p_harga_beli DOUBLE,
-
-  IN p_harga_jual DOUBLE,
-
-  IN p_stok INT,
-
-  IN p_min_stok INT,
-
-  IN p_jenis_produk_id INT
-
+    kode VARCHAR(10),
+    nama VARCHAR(255),
+    jenis_produk_id VARCHAR(255),
+    harga_jual DOUBLE,
+    harga_beli DOUBLE,
+    stok INT(11),
+    min_stok INT(11)
 ) RETURNS INT
-
+DETERMINISTIC
 BEGIN
+    DECLARE id_produk INT;
+    INSERT INTO produk (kode, nama, jenis_produk_id, harga_jual, harga_beli, stok, min_stok) 
+    VALUES (kode, nama, jenis_produk_id, harga_jual, harga_beli, stok, min_stok);
+    SET id_produk = LAST_INSERT_ID();
+    RETURN id_produk;
+END $$
+DELIMITER ;
 
-  INSERT INTO produk (kode, nama, harga_beli, harga_jual, stok, min_stok, jenis_produk_id)
+SELECT inputProduk('L002', 'Laptop ASUS', 5, 15000000, 10000000, 50, 10);
 
-  VALUES (p_kode, p_nama, p_harga_beli, p_harga_jual, p_stok, p_min_stok, p_jenis_produk_id);
 
-  RETURN LAST_INSERT_ID();
+-- Procedure
+DELIMITER $$
+CREATE PROCEDURE inputProduk(
+    IN kode VARCHAR(10),
+    IN nama VARCHAR(255),
+    IN jenis_produk_id VARCHAR(255),
+    IN harga_jual DOUBLE,
+    IN harga_beli DOUBLE,
+    IN stok INT(11),
+    IN min_stok INT(11)
+)
+BEGIN
+    INSERT INTO produk (kode, nama, jenis_produk_id, harga_jual, harga_beli, stok, min_stok) 
+    VALUES (kode, nama, jenis_produk_id, harga_jual, harga_beli, stok, min_stok);
+END $$
+DELIMITER ;
+CALL inputProduk('L002', 'Laptop ASUS', 5, 15000000, 10000000, 50, 10);
 
-END;
 
--- Panggil fungsi inputProduk()
 
-SELECT inputProduk('PR001', 'Product A', 10000, 12000, 10, 5, 1);
-
--- Buat fungsi showProduk()
-
+-- Buat fungsi showProduk(), setelah itu panggil fungsinya
+DELIMITER $$
 CREATE FUNCTION showProduk()
-
-RETURNS TABLE
-
-AS
-
-RETURN SELECT * FROM produk;
-
--- Panggil fungsi showProduk()
-
-SELECT * FROM showProduk();
-
--- Buat fungsi totalPesanan()
-
-CREATE FUNCTION totalPesanan(p_pelanggan_id INT)
-
-RETURNS DOUBLE
-
+RETURNS TEXT
+DETERMINISTIC
 BEGIN
+    DECLARE result TEXT;
+    SET result = '';
+    SELECT GROUP_CONCAT(CONCAT('ID: ', produk.id, ', Kode: ', produk.kode, ', Nama: ', produk.nama, ', Harga Beli: ', produk.harga_beli, ', Harga Jual: ', produk.harga_jual, ', Stok: ', produk.stok, ', Minimum Stok: ', produk.min_stok) SEPARATOR '; ') INTO result FROM produk;
+    RETURN result;
+END $$
+DELIMITER ;
 
-  DECLARE total_pesanan DOUBLE;
+SELECT showProduk();
 
-  SELECT SUM(total) INTO total_pesanan FROM pesanan WHERE pelanggan_id = p_pelanggan_id;
 
-  RETURN total_pesanan;
+-- Procedure
+DELIMITER $$
+CREATE PROCEDURE showProduk()
+BEGIN
+    SELECT * FROM produk;
+END $$
+DELIMITER ;
 
-END;
+CALL showProduk();
 
--- Panggil fungsi totalPesanan()
 
-SELECT totalPesanan(1);
+-- Buat fungsi totalPesanan(), setelah itu panggil fungsinya
+DELIMITER $$
+CREATE FUNCTION totalPesanan()
+RETURNS TEXT
+DETERMINISTIC
+BEGIN
+  DECLARE result TEXT;
+  SELECT CONCAT('Kode Pelanggan: ', pelanggan.kode, ', Nama Pelanggan: ', pelanggan.nama_pelanggan, ', Total Produk: ', SUM(pesanan_items.qty), ', Total Harga: ', SUM(pesanan_items.qty * pesanan_items.harga)) INTO result
+  FROM pesanan_items
+  JOIN pesanan ON pesanan_items.pesanan_id = pesanan.id
+  JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+  GROUP BY pelanggan.kode, pelanggan.nama_pelanggan
+  LIMIT 1;
+  RETURN result;
+END $$
+DELIMITER ;
 
--- Tampilkan seluruh pesanan dari semua pelanggan
+SELECT totalPesanan();
 
-SELECT pesanan.id, pesanan.tanggal, pesanan.total, pelanggan.nama, produk.nama
 
-FROM pesanan
+-- Procedure
+DELIMITER $$
+BEGIN
+  SELECT pelanggan.kode AS kode_pelanggan, pelanggan.nama_pelanggan, SUM(pesanan_items.qty) AS total_produk, SUM(pesanan_items.qty * pesanan_items.harga) AS total_harga
+  FROM pesanan_items
+  JOIN pesanan ON pesanan_items.pesanan_id = pesanan.id
+  JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+  GROUP BY pelanggan.kode, pelanggan.nama_pelanggan;
+END $$
+DELIMITER ;
+CALL totalPesanan();
 
-JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
 
-JOIN produk ON pesanan.produk_id = produk.id;
+-- Buat Function untuk menampilkan seluruh pesanan dari semua pelanggan
+DELIMITER $$
+CREATE FUNCTION showPesananAll()
+RETURNS TEXT
+DETERMINISTIC
+BEGIN
+  DECLARE result TEXT;
+  SELECT CONCAT('Pesanan ID: ', pesanan.id, ', Tanggal: ', pesanan.tanggal, ', Kode Pelanggan: ', pelanggan.kode, ', Nama Pelanggan: ', pelanggan.nama_pelanggan, ', Kode Produk: ', produk.kode, ', Nama Produk: ', produk.nama, ', Jumlah: ', pesanan_items.qty, ', Harga Satuan: ', produk.harga_jual, ', Total Harga: ', pesanan_items.qty * produk.harga_jual) INTO result
+    FROM pesanan
+    JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    JOIN pesanan_items ON pesanan.id = pesanan_items.pesanan_id
+    JOIN produk ON pesanan_items.produk_id = produk.id
+    WHERE pesanan.id = pesanan_id
+    LIMIT 1;
+  RETURN result;
+END $$
+DELIMITER ;
+SELECT showPesananAll();
 
--- Buat tampilan pesanan_produk_vw
+-- Procedure
+DELIMITER $$
+CREATE PROCEDURE showAllPesanan()
+BEGIN
+  SELECT pesanan.id AS pesanan_id, pesanan.tanggal, pelanggan.kode AS pelanggan_kode, pelanggan.nama_pelanggan, produk.kode AS produk_kode, produk.nama AS nama_produk, pesanan_items.qty, produk.harga_jual, SUM(pesanan_items.qty * pesanan_items.harga) AS total_harga
+    FROM pesanan
+    JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    JOIN pesanan_items ON pesanan.id = pesanan_items.pesanan_id
+    JOIN produk ON pesanan_items.produk_id = produk.id
+    GROUP BY pesanan.id, produk.id, pesanan_items.id, pelanggan.id;
+END $$
+DELIMITER ;
+CALL showAllPesanan();
 
+
+-- buatkan query panjang di atas menjadi sebuah view baru: pesanan_produk_vw (menggunakan join dari table pesanan,pelanggan dan produk)
 CREATE VIEW pesanan_produk_vw AS
-
-SELECT pesanan.id AS pesanan_id, pesanan.tanggal, pesanan.total, pelanggan.nama AS pelanggan_nama, produk.nama AS produk_nama
-
-FROM pesanan
-
-JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
-
-JOIN produk ON pesanan.produk_id = produk.id;
-
--- Panggil tampilan pesanan_produk_vw
+SELECT pesanan.id AS pesanan_id, pesanan.tanggal, pelanggan.kode AS pelanggan_kode, pelanggan.nama_pelanggan, produk.kode AS produk_kode, produk.nama AS nama_produk, pesanan_items.qty, produk.harga_jual, SUM(pesanan_items.qty * pesanan_items.harga) AS total_harga
+    FROM pesanan
+    JOIN pelanggan ON pesanan.pelanggan_id = pelanggan.id
+    JOIN pesanan_items ON pesanan.id = pesanan_items.pesanan_id
+    JOIN produk ON pesanan_items.produk_id = produk.id
+    GROUP BY pesanan.id, produk.id, pesanan_items.id, pelanggan.id;
 
 SELECT * FROM pesanan_produk_vw;
